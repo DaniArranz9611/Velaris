@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Star, PlusCircle, Trash2 } from 'lucide-react'
+import { PlusCircle, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { usePerfil } from '../lib/PerfilContext'
+import { StarRatingInput, StarRatingDisplay } from './StarRating'
 
 export default function JournalPersonal() {
   const { perfil } = usePerfil()
@@ -85,13 +86,7 @@ export default function JournalPersonal() {
         />
         <label>
           Mi calificación:
-          <select value={calificacion} onChange={(e) => setCalificacion(Number(e.target.value))}>
-            {[5, 4, 3, 2, 1].map((n) => (
-              <option key={n} value={n}>
-                {'★'.repeat(n)}
-              </option>
-            ))}
-          </select>
+          <StarRatingInput valor={calificacion} onChange={setCalificacion} />
         </label>
         <textarea
           placeholder="¿Qué te pareció? (opcional)"
@@ -119,12 +114,7 @@ export default function JournalPersonal() {
                   <Trash2 size={13} />
                 </button>
               </div>
-              {l.calificacion && (
-                <div className="estrellas">
-                  {'★'.repeat(l.calificacion)}
-                  {'☆'.repeat(5 - l.calificacion)}
-                </div>
-              )}
+              {l.calificacion && <StarRatingDisplay valor={Number(l.calificacion)} />}
               {l.comentario && <p>{l.comentario}</p>}
             </li>
           ))}

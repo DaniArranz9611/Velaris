@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { usePerfil } from '../lib/PerfilContext'
+import { StarRatingInput, StarRatingDisplay } from './StarRating'
 
 export default function ResenasLibro({ libroId }) {
   const { perfil } = usePerfil()
@@ -92,13 +93,7 @@ export default function ResenasLibro({ libroId }) {
       <form onSubmit={guardarResena} className="form-inline resena-form">
         <label>
           Tu calificación:
-          <select value={calificacion} onChange={(e) => setCalificacion(Number(e.target.value))}>
-            {[1, 2, 3, 4, 5].map((n) => (
-              <option key={n} value={n}>
-                {'⭐'.repeat(n)}
-              </option>
-            ))}
-          </select>
+          <StarRatingInput valor={calificacion} onChange={setCalificacion} />
         </label>
         <textarea
           placeholder="¿Qué te pareció el libro?"
@@ -122,7 +117,7 @@ export default function ResenasLibro({ libroId }) {
           {resenas.map((r) => (
             <li key={r.id} className="resena-item">
               <strong>{r.perfiles?.nombre ?? 'Sin nombre'}</strong>
-              <span> {'⭐'.repeat(r.calificacion)}</span>
+              <StarRatingDisplay valor={Number(r.calificacion)} />
               {r.comentario && <p>{r.comentario}</p>}
               {r.foto_url && <img src={r.foto_url} alt="" className="resena-foto" />}
             </li>

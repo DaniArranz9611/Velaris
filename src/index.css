@@ -1024,6 +1024,51 @@ textarea {
   margin: 0.3rem 0;
 }
 
+.star-rating-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  color: var(--dorado);
+}
+
+.star-slot {
+  position: relative;
+  display: inline-block;
+}
+
+.star-base {
+  color: var(--borde);
+  display: block;
+}
+
+.star-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  display: block;
+  height: 100%;
+}
+
+.star-numero {
+  font-size: 0.85rem;
+  color: var(--texto);
+  margin-left: 0.4rem;
+  font-weight: 600;
+}
+
+.star-rating-input {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.star-rating-input input[type='range'] {
+  flex: 1;
+  min-width: 140px;
+}
+
 /* ---------- Encuestas ---------- */
 .encuesta-card {
   display: flex;

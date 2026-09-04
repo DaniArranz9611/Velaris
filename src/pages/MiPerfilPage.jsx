@@ -6,6 +6,7 @@ import { usePerfil } from '../lib/PerfilContext'
 import Layout from '../components/Layout'
 import EditarNombre from '../components/EditarNombre'
 import JournalPersonal from '../components/JournalPersonal'
+import { StarRatingDisplay } from '../components/StarRating'
 
 export default function MiPerfilPage() {
   const { perfil } = usePerfil()
@@ -66,7 +67,7 @@ export default function MiPerfilPage() {
   const librosLeidos = resenas.filter((r) => r.libros)
   const promedioPropio =
     resenas.length > 0
-      ? (resenas.reduce((acc, r) => acc + r.calificacion, 0) / resenas.length).toFixed(1)
+      ? (resenas.reduce((acc, r) => acc + Number(r.calificacion), 0) / resenas.length).toFixed(1)
       : '—'
 
   return (
@@ -138,8 +139,7 @@ export default function MiPerfilPage() {
                         {r.libros?.autor && <span className="libro-autor"> — {r.libros.autor}</span>}
                       </Link>
                       <div className="estrellas">
-                        {'★'.repeat(r.calificacion)}
-                        {'☆'.repeat(5 - r.calificacion)}
+                        <StarRatingDisplay valor={Number(r.calificacion)} />
                       </div>
                       {r.comentario && <p>{r.comentario}</p>}
                     </li>

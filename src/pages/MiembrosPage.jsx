@@ -4,6 +4,7 @@ import { Users, BookMarked, Star, Lock } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { usePerfil } from '../lib/PerfilContext'
 import Layout from '../components/Layout'
+import { StarRatingDisplay } from '../components/StarRating'
 
 export default function MiembrosPage() {
   const { id } = useParams()
@@ -147,8 +148,7 @@ function PerfilDeMiembro({ id }) {
                     <strong>{r.libros?.titulo}</strong>
                   </Link>
                   <div className="estrellas">
-                    {'★'.repeat(r.calificacion)}
-                    {'☆'.repeat(5 - r.calificacion)}
+                    <StarRatingDisplay valor={Number(r.calificacion)} />
                   </div>
                   {r.comentario && <p>{r.comentario}</p>}
                 </li>
