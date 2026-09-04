@@ -19,7 +19,7 @@ export default function EncuestasPage() {
     setLoading(true)
     const { data, error } = await supabase
       .from('encuestas')
-      .select('*, opciones_encuesta(*, votos_encuesta(*))')
+      .select('*, opciones_encuesta(*, votos_encuesta(*, perfiles(nombre)))')
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -169,17 +169,23 @@ export default function EncuestasPage() {
                     const votos = opcion.votos_encuesta.length
                     const porcentaje = totalVotos > 0 ? Math.round((votos / totalVotos) * 100) : 0
                     return (
-                      <button
-                        key={opcion.id}
-                        className={`opcion-encuesta ${miVoto === opcion.id ? 'opcion-votada' : ''}`}
-                        onClick={() => votar(encuesta.id, opcion.id)}
-                      >
-                        <div className="opcion-fondo" style={{ width: `${porcentaje}%` }} />
-                        <span className="opcion-texto">{opcion.texto}</span>
-                        <span className="opcion-porcentaje">
-                          {porcentaje}% ({votos})
-                        </span>
-                      </button>
+                      <div key={opcion.id}>
+                        <button
+                          className={`opcion-encuesta ${miVoto === opcion.id ? 'opcion-votada' : ''}`}
+                          onClick={() => votar(encuesta.id, opcion.id)}
+                        >
+                          <div className="opcion-fondo" style={{ width: `${porcentaje}%` }} />
+                          <span className="opcion-texto">{opcion.texto}</span>
+                          <span className="opcion-porcentaje">
+                            {porcentaje}% ({votos})
+                          </span>
+                        </button>
+                        {votos > 0 && (
+                          <span className="opcion-votantes">
+                            {opcion.votos_encuesta.map((v) => v.perfiles?.nombre).join(', ')}
+                          </span>
+                        )}
+                      </div>
                     )
                   })}
                 </div>

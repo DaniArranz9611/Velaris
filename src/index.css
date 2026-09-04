@@ -409,6 +409,13 @@ button:disabled {
   gap: 0.4rem;
 }
 
+.evento-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
 .evento-fecha {
   display: flex;
   align-items: center;
@@ -436,6 +443,16 @@ button:disabled {
   color: var(--texto);
   white-space: pre-wrap;
   font-size: 0.92rem;
+}
+
+.resumen-asistencia {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--borde);
+  font-size: 0.82rem;
 }
 
 /* ---------- Tabla de permisos ---------- */
@@ -1049,6 +1066,50 @@ textarea {
 .opcion-votada {
   border-color: var(--dorado);
   box-shadow: 0 0 0 2px rgba(212, 175, 106, 0.35);
+}
+
+.opcion-votantes {
+  display: block;
+  font-size: 0.75rem;
+  color: #8a8378;
+  padding: 0.2rem 0.9rem 0;
+}
+
+/* ---------- Cuotas mensuales ---------- */
+.cuotas-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.cuotas-resumen {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.lista-cuotas {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cuota-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--borde);
+}
+
+.cuota-item:last-child {
+  border-bottom: none;
 }
 
 /* ---------- Admin: invitaciones ---------- */

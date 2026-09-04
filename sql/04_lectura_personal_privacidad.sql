@@ -73,6 +73,10 @@ drop policy if exists movimientos_select on movimientos;
 create policy movimientos_select on movimientos for select
   using (es_admin_global(auth.uid()) or nivel_en_modulo(auth.uid(), 'contabilidad') <> 'ninguno');
 
+drop policy if exists cuotas_select on cuotas_mensuales;
+create policy cuotas_select on cuotas_mensuales for select
+  using (es_admin_global(auth.uid()) or nivel_en_modulo(auth.uid(), 'contabilidad') <> 'ninguno');
+
 drop policy if exists listas_select on listas_compras;
 create policy listas_select on listas_compras for select
   using (es_admin_global(auth.uid()) or nivel_en_modulo(auth.uid(), 'contabilidad') <> 'ninguno');

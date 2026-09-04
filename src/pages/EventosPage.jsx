@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CalendarDays, MapPin, PlusCircle, Check, X } from 'lucide-react'
+import { CalendarDays, MapPin, PlusCircle, Check, X, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { usePerfil } from '../lib/PerfilContext'
 import Layout from '../components/Layout'
@@ -7,6 +7,8 @@ import Layout from '../components/Layout'
 export default function EventosPage() {
   const { perfil, puede } = usePerfil()
   const [eventos, setEventos] = useState([])
+  const [asistencias, setAsistencias] = useState([])
+  const [integrantes, setIntegrantes] = useState([])
   const [loading, setLoading] = useState(true)
   const [titulo, setTitulo] = useState('')
   const [fecha, setFecha] = useState('')
@@ -16,13 +18,15 @@ export default function EventosPage() {
   const [misRespuestas, setMisRespuestas] = useState({})
 
   const puedeEditar = puede('eventos', 'editar')
+  const puedeAdministrar = puede('eventos', 'administrar')
 
   async function cargarEventos() {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('eventos')
-      .select('*')
-      .order('fecha', { ascending: true })
+    const [{ data, error }, { data: todasAsistencias }, { data: perfilesData }] = await Promise.all([
+      supabase.from('eventos').select('*').order('fecha', { ascending: true }),
+      supabase.from('evento_asistencia').select('evento_id, integrante_id, asistira, perfiles(nombre)'),
+      supabase.from('perfiles').select('id, nombre')
+    ])
 
     if (error) {
       setError(error.message)
@@ -31,16 +35,13 @@ export default function EventosPage() {
     }
 
     setEventos(data)
+    setAsistencias(todasAsistencias ?? [])
+    setIntegrantes(perfilesData ?? [])
 
-    if (perfil?.id && data.length > 0) {
-      const { data: asistencias } = await supabase
-        .from('evento_asistencia')
-        .select('evento_id, asistira')
-        .eq('integrante_id', perfil.id)
-
+    if (perfil?.id) {
       const mapa = {}
-      for (const a of asistencias ?? []) {
-        mapa[a.evento_id] = a.asistira
+      for (const a of todasAsistencias ?? []) {
+        if (a.integrante_id === perfil.id) mapa[a.evento_id] = a.asistira
       }
       setMisRespuestas(mapa)
     }
@@ -81,7 +82,13 @@ export default function EventosPage() {
       .from('evento_asistencia')
       .upsert({ evento_id: eventoId, integrante_id: perfil.id, asistira }, { onConflict: 'evento_id,integrante_id' })
 
-    setMisRespuestas((prev) => ({ ...prev, [eventoId]: asistira }))
+    cargarEventos()
+  }
+
+  async function eliminarEvento(eventoId) {
+    if (!confirm('¿Eliminar este evento y todas sus respuestas de asistencia?')) return
+    await supabase.from('eventos').delete().eq('id', eventoId)
+    cargarEventos()
   }
 
   return (
@@ -128,43 +135,72 @@ export default function EventosPage() {
         <p className="vacio">Todavía no hay eventos cargados.</p>
       ) : (
         <ul className="lista">
-          {eventos.map((evento) => (
-            <li key={evento.id} className="card evento-card">
-              <strong>{evento.titulo}</strong>
-              <div className="evento-fecha">
-                <CalendarDays size={15} />
-                {new Date(evento.fecha).toLocaleString('es-AR', {
-                  dateStyle: 'full',
-                  timeStyle: 'short'
-                })}
-              </div>
-              {evento.lugar && (
-                <a
-                  className="evento-lugar"
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(evento.lugar)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <MapPin size={15} /> {evento.lugar}
-                </a>
-              )}
-              {evento.descripcion && <p className="evento-descripcion">{evento.descripcion}</p>}
-              <div className="rsvp">
-                <button
-                  className={misRespuestas[evento.id] === true ? 'activo' : ''}
-                  onClick={() => responderAsistencia(evento.id, true)}
-                >
-                  <Check size={15} /> Voy
-                </button>
-                <button
-                  className={misRespuestas[evento.id] === false ? 'activo' : ''}
-                  onClick={() => responderAsistencia(evento.id, false)}
-                >
-                  <X size={15} /> No voy
-                </button>
-              </div>
-            </li>
-          ))}
+          {eventos.map((evento) => {
+            const respuestas = asistencias.filter((a) => a.evento_id === evento.id)
+            const van = respuestas.filter((a) => a.asistira === true)
+            const noVan = respuestas.filter((a) => a.asistira === false)
+            const sinResponder = integrantes.filter(
+              (i) => !respuestas.some((r) => r.integrante_id === i.id)
+            )
+
+            return (
+              <li key={evento.id} className="card evento-card">
+                <div className="evento-header">
+                  <strong>{evento.titulo}</strong>
+                  {(puedeAdministrar || evento.creado_por === perfil?.id) && (
+                    <button className="btn-link rojo" onClick={() => eliminarEvento(evento.id)}>
+                      <Trash2 size={14} /> Eliminar
+                    </button>
+                  )}
+                </div>
+                <div className="evento-fecha">
+                  <CalendarDays size={15} />
+                  {new Date(evento.fecha).toLocaleString('es-AR', {
+                    dateStyle: 'full',
+                    timeStyle: 'short'
+                  })}
+                </div>
+                {evento.lugar && (
+                  <a
+                    className="evento-lugar"
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(evento.lugar)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <MapPin size={15} /> {evento.lugar}
+                  </a>
+                )}
+                {evento.descripcion && <p className="evento-descripcion">{evento.descripcion}</p>}
+                <div className="rsvp">
+                  <button
+                    className={misRespuestas[evento.id] === true ? 'activo' : ''}
+                    onClick={() => responderAsistencia(evento.id, true)}
+                  >
+                    <Check size={15} /> Voy
+                  </button>
+                  <button
+                    className={misRespuestas[evento.id] === false ? 'activo' : ''}
+                    onClick={() => responderAsistencia(evento.id, false)}
+                  >
+                    <X size={15} /> No voy
+                  </button>
+                </div>
+                <div className="resumen-asistencia">
+                  <span className="resumen-asistencia-grupo verde">
+                    Van ({van.length}): {van.map((a) => a.perfiles?.nombre).join(', ') || '—'}
+                  </span>
+                  <span className="resumen-asistencia-grupo rojo">
+                    No van ({noVan.length}): {noVan.map((a) => a.perfiles?.nombre).join(', ') || '—'}
+                  </span>
+                  {sinResponder.length > 0 && (
+                    <span className="resumen-asistencia-grupo">
+                      Sin responder ({sinResponder.length}): {sinResponder.map((i) => i.nombre).join(', ')}
+                    </span>
+                  )}
+                </div>
+              </li>
+            )
+          })}
         </ul>
       )}
     </div>

@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient'
 import { usePerfil } from '../lib/PerfilContext'
 import Layout from '../components/Layout'
 import ListasCompras from '../components/ListasCompras'
+import CuotasMensuales from '../components/CuotasMensuales'
 
 function mesActualISO() {
   const hoy = new Date()
@@ -155,6 +156,8 @@ export default function ContabilidadPage() {
             </span>
           </div>
         </div>
+
+        <CuotasMensuales />
 
         {puedeEditar && (
           <form onSubmit={agregarMovimiento} className="card form-inline">
