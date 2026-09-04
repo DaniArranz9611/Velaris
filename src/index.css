@@ -963,10 +963,20 @@ textarea {
 
 .boton-secundario {
   background: transparent;
-  color: var(--rojo);
+  color: var(--noche-claro);
   border: 1px solid currentColor;
   font-size: 0.85rem;
   padding: 0.35rem 0.7rem;
+}
+
+.boton-secundario.peligro {
+  color: var(--rojo);
+}
+
+.teoria-acciones-editar {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 /* ---------- Listas de compras ---------- */

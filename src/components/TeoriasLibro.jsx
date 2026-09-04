@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Sparkles, EyeOff, Trash2 } from 'lucide-react'
+import { Sparkles, EyeOff, Trash2, Pencil, Check, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { usePerfil } from '../lib/PerfilContext'
 
@@ -51,6 +51,11 @@ export default function TeoriasLibro({ libroId }) {
     cargar()
   }
 
+  async function editar(id, cambios) {
+    await supabase.from('teorias').update(cambios).eq('id', id)
+    cargar()
+  }
+
   if (cargando) return <p>Cargando teorías...</p>
 
   return (
@@ -79,15 +84,47 @@ export default function TeoriasLibro({ libroId }) {
       <div className="teorias-lista">
         {teorias.length === 0 && <p>Todavía no hay teorías para este libro.</p>}
         {teorias.map((t) => (
-          <TeoriaCard key={t.id} t={t} perfil={perfil} esAdmin={esAdmin} onBorrar={borrar} />
+          <TeoriaCard key={t.id} t={t} perfil={perfil} esAdmin={esAdmin} onBorrar={borrar} onEditar={editar} />
         ))}
       </div>
     </div>
   )
 }
 
-function TeoriaCard({ t, perfil, esAdmin, onBorrar }) {
+function TeoriaCard({ t, perfil, esAdmin, onBorrar, onEditar }) {
   const [mostrar, setMostrar] = useState(!t.spoiler)
+  const [editando, setEditando] = useState(false)
+  const [titulo, setTitulo] = useState(t.titulo)
+  const [contenido, setContenido] = useState(t.contenido)
+  const [spoiler, setSpoiler] = useState(t.spoiler)
+
+  function guardar() {
+    onEditar(t.id, { titulo, contenido, spoiler })
+    setEditando(false)
+  }
+
+  const puedeEditar = t.integrante_id === perfil?.id || esAdmin
+
+  if (editando) {
+    return (
+      <div className="teoria-card">
+        <input type="text" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
+        <textarea value={contenido} onChange={(e) => setContenido(e.target.value)} rows={3} />
+        <label>
+          <input type="checkbox" checked={spoiler} onChange={(e) => setSpoiler(e.target.checked)} />
+          Contiene spoilers
+        </label>
+        <div className="teoria-acciones-editar">
+          <button onClick={guardar}>
+            <Check size={14} /> Guardar
+          </button>
+          <button className="boton-secundario" onClick={() => setEditando(false)}>
+            <X size={14} /> Cancelar
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="teoria-card">
@@ -107,10 +144,15 @@ function TeoriaCard({ t, perfil, esAdmin, onBorrar }) {
         <p>{t.contenido}</p>
       )}
 
-      {(t.integrante_id === perfil?.id || esAdmin) && (
-        <button className="boton-secundario" onClick={() => onBorrar(t.id)}>
-          <Trash2 size={13} /> Eliminar
-        </button>
+      {puedeEditar && (
+        <div className="teoria-acciones-editar">
+          <button className="boton-secundario" onClick={() => setEditando(true)}>
+            <Pencil size={13} /> Editar
+          </button>
+          <button className="boton-secundario peligro" onClick={() => onBorrar(t.id)}>
+            <Trash2 size={13} /> Eliminar
+          </button>
+        </div>
       )}
     </div>
   )

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { PlusCircle, Trash2 } from 'lucide-react'
+import { PlusCircle, Trash2, Pencil, Check, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { usePerfil } from '../lib/PerfilContext'
 import { StarRatingInput, StarRatingDisplay } from './StarRating'
@@ -61,6 +61,11 @@ export default function JournalPersonal() {
     cargar()
   }
 
+  async function editar(id, cambios) {
+    await supabase.from('libro_journal_personal').update(cambios).eq('id', id)
+    cargar()
+  }
+
   if (loading) return <p>Cargando tu journal...</p>
 
   return (
@@ -106,20 +111,59 @@ export default function JournalPersonal() {
       ) : (
         <ul className="lista">
           {libros.map((l) => (
-            <li key={l.id} className="card">
-              <div className="lista-header">
-                <strong>{l.titulo}</strong>
-                {l.autor && <span className="libro-autor"> — {l.autor}</span>}
-                <button className="btn-link rojo" onClick={() => borrar(l.id)}>
-                  <Trash2 size={13} />
-                </button>
-              </div>
-              {l.calificacion && <StarRatingDisplay valor={Number(l.calificacion)} />}
-              {l.comentario && <p>{l.comentario}</p>}
-            </li>
+            <EntradaJournal key={l.id} l={l} onBorrar={borrar} onEditar={editar} />
           ))}
         </ul>
       )}
     </div>
+  )
+}
+
+function EntradaJournal({ l, onBorrar, onEditar }) {
+  const [editando, setEditando] = useState(false)
+  const [titulo, setTitulo] = useState(l.titulo)
+  const [autor, setAutor] = useState(l.autor ?? '')
+  const [calificacion, setCalificacion] = useState(Number(l.calificacion) || 5)
+  const [comentario, setComentario] = useState(l.comentario ?? '')
+
+  function guardar() {
+    onEditar(l.id, { titulo, autor, calificacion, comentario })
+    setEditando(false)
+  }
+
+  if (editando) {
+    return (
+      <li className="card">
+        <input type="text" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
+        <input type="text" value={autor} onChange={(e) => setAutor(e.target.value)} placeholder="Autor" />
+        <StarRatingInput valor={calificacion} onChange={setCalificacion} />
+        <textarea value={comentario} onChange={(e) => setComentario(e.target.value)} rows={2} />
+        <div className="teoria-acciones-editar">
+          <button onClick={guardar}>
+            <Check size={14} /> Guardar
+          </button>
+          <button className="boton-secundario" onClick={() => setEditando(false)}>
+            <X size={14} /> Cancelar
+          </button>
+        </div>
+      </li>
+    )
+  }
+
+  return (
+    <li className="card">
+      <div className="lista-header">
+        <strong>{l.titulo}</strong>
+        {l.autor && <span className="libro-autor"> — {l.autor}</span>}
+        <button className="btn-link" onClick={() => setEditando(true)}>
+          <Pencil size={13} />
+        </button>
+        <button className="btn-link rojo" onClick={() => onBorrar(l.id)}>
+          <Trash2 size={13} />
+        </button>
+      </div>
+      {l.calificacion && <StarRatingDisplay valor={Number(l.calificacion)} />}
+      {l.comentario && <p>{l.comentario}</p>}
+    </li>
   )
 }
