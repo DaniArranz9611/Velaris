@@ -1,6 +1,7 @@
 -- =========================================================
--- FASE 4: Lectura personal (varios libros a la vez) + privacidad + miembros
--- Seguro de re-ejecutar. No borra nada.
+-- FASE 4b: Lectura personal (varios libros a la vez) + privacidad + miembros
+-- IMPORTANTE: ejecutá primero sql/04a_enum_values.sql (una sola vez, solo eso),
+-- después ejecutá este archivo completo. Seguro de re-ejecutar. No borra nada.
 -- =========================================================
 
 do $$
@@ -27,8 +28,6 @@ create policy avance_select on avance_lectura for select
 -- (ya existe perfiles_select con auth.uid() is not null, no hace falta tocarlo)
 
 -- ---------- Permiso propio para Encuestas (antes usaba "lecturas", ahora es explícito) ----------
-alter type modulo_tipo add value if not exists 'encuestas';
-
 insert into permisos_modulo (integrante_id, modulo, nivel)
 select id, 'encuestas', 'ver' from perfiles
 on conflict (integrante_id, modulo) do nothing;
@@ -48,9 +47,6 @@ create policy opciones_delete on opciones_encuesta for delete
 -- ---------- Que las invitaciones nuevas también incluyan el permiso de Encuestas ----------
 alter table if exists invitaciones
   add column if not exists nivel_encuestas nivel_permiso not null default 'ver';
-
--- ---------- Nuevo nivel "ninguno": para que un módulo pueda ocultarse de verdad ----------
-alter type nivel_permiso add value if not exists 'ninguno';
 
 -- ---------- Que "ninguno" bloquee de verdad el acceso a los datos (no solo el menú) ----------
 drop policy if exists libros_select on libros;
