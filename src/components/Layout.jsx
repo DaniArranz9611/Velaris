@@ -5,17 +5,18 @@ import { supabase } from '../lib/supabaseClient'
 import EditarNombre from './EditarNombre'
 
 const LINKS = [
-  { to: '/dashboard', label: 'Inicio', Icono: LayoutGrid },
-  { to: '/libros', label: 'Libros', Icono: BookOpen },
-  { to: '/eventos', label: 'Eventos', Icono: CalendarDays },
-  { to: '/contabilidad', label: 'Contabilidad', Icono: Wallet2 },
-  { to: '/encuestas', label: 'Encuestas', Icono: BarChart3 },
-  { to: '/miembros', label: 'Miembros', Icono: Users }
+  { to: '/dashboard', label: 'Inicio', Icono: LayoutGrid, modulo: null },
+  { to: '/libros', label: 'Libros', Icono: BookOpen, modulo: 'lecturas' },
+  { to: '/eventos', label: 'Eventos', Icono: CalendarDays, modulo: 'eventos' },
+  { to: '/contabilidad', label: 'Contabilidad', Icono: Wallet2, modulo: 'contabilidad' },
+  { to: '/encuestas', label: 'Encuestas', Icono: BarChart3, modulo: 'encuestas' },
+  { to: '/miembros', label: 'Miembros', Icono: Users, modulo: null }
 ]
 
 export default function Layout({ children }) {
-  const { perfil } = usePerfil()
+  const { perfil, puede } = usePerfil()
   const location = useLocation()
+  const linksVisibles = LINKS.filter((link) => !link.modulo || puede(link.modulo, 'ver'))
 
   return (
     <div className="app-shell">
@@ -43,7 +44,7 @@ export default function Layout({ children }) {
         )}
         <span className="etiqueta-seccion-nav">Club de lectura</span>
         <nav className="app-nav">
-          {LINKS.map((link) => (
+          {linksVisibles.map((link) => (
             <Link
               key={link.to}
               to={link.to}

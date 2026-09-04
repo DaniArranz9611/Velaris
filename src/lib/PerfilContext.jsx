@@ -3,7 +3,7 @@ import { supabase } from './supabaseClient'
 import { useAuth } from './AuthContext'
 
 const PerfilContext = createContext(undefined)
-const MODULOS = ['contabilidad', 'lecturas', 'eventos', 'notificaciones']
+const MODULOS = ['contabilidad', 'lecturas', 'eventos', 'notificaciones', 'encuestas']
 
 export function PerfilProvider({ children }) {
   const { session } = useAuth()
@@ -91,7 +91,7 @@ export function PerfilProvider({ children }) {
 
   function puede(modulo, nivelMinimo) {
     if (perfil?.es_admin_global) return true
-    const orden = { ver: 1, editar: 2, administrar: 3 }
+    const orden = { ninguno: 0, ver: 1, editar: 2, administrar: 3 }
     const nivelActual = permisos[modulo]
     if (!nivelActual) return false
     return orden[nivelActual] >= orden[nivelMinimo]

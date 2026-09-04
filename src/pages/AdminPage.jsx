@@ -4,8 +4,19 @@ import { supabase } from '../lib/supabaseClient'
 import { usePerfil } from '../lib/PerfilContext'
 import Layout from '../components/Layout'
 
-const MODULOS = ['contabilidad', 'lecturas', 'eventos', 'notificaciones']
-const NIVELES = ['ver', 'editar', 'administrar']
+const MODULOS = [
+  { clave: 'lecturas', etiqueta: 'Libros y club' },
+  { clave: 'eventos', etiqueta: 'Eventos' },
+  { clave: 'contabilidad', etiqueta: 'Contabilidad' },
+  { clave: 'encuestas', etiqueta: 'Encuestas' },
+  { clave: 'notificaciones', etiqueta: 'Notificaciones' }
+]
+const NIVELES = [
+  { valor: 'ninguno', etiqueta: 'Sin acceso (oculto)' },
+  { valor: 'ver', etiqueta: 'Solo ver' },
+  { valor: 'editar', etiqueta: 'Puede crear/editar' },
+  { valor: 'administrar', etiqueta: 'Administra todo' }
+]
 
 export default function AdminPage() {
   const { perfil } = usePerfil()
@@ -21,7 +32,8 @@ export default function AdminPage() {
     contabilidad: 'ver',
     lecturas: 'ver',
     eventos: 'ver',
-    notificaciones: 'ver'
+    notificaciones: 'ver',
+    encuestas: 'ver'
   })
 
   async function cargar() {
@@ -108,6 +120,7 @@ export default function AdminPage() {
           nivel_lecturas: nivelesInvitar.lecturas,
           nivel_eventos: nivelesInvitar.eventos,
           nivel_notificaciones: nivelesInvitar.notificaciones,
+          nivel_encuestas: nivelesInvitar.encuestas,
           invitado_por: perfil.id
         },
         { onConflict: 'email' }
@@ -128,7 +141,13 @@ export default function AdminPage() {
 
     setEmailInvitar('')
     setAdminInvitar(false)
-    setNivelesInvitar({ contabilidad: 'ver', lecturas: 'ver', eventos: 'ver', notificaciones: 'ver' })
+    setNivelesInvitar({
+      contabilidad: 'ver',
+      lecturas: 'ver',
+      eventos: 'ver',
+      notificaciones: 'ver',
+      encuestas: 'ver'
+    })
     cargar()
   }
 
@@ -212,17 +231,17 @@ export default function AdminPage() {
           </label>
           {!adminInvitar &&
             MODULOS.map((modulo) => (
-              <label key={modulo} className="invitar-modulo">
-                {modulo}:{' '}
+              <label key={modulo.clave} className="invitar-modulo">
+                {modulo.etiqueta}
                 <select
-                  value={nivelesInvitar[modulo]}
+                  value={nivelesInvitar[modulo.clave]}
                   onChange={(e) =>
-                    setNivelesInvitar((prev) => ({ ...prev, [modulo]: e.target.value }))
+                    setNivelesInvitar((prev) => ({ ...prev, [modulo.clave]: e.target.value }))
                   }
                 >
                   {NIVELES.map((nivel) => (
-                    <option key={nivel} value={nivel}>
-                      {nivel}
+                    <option key={nivel.valor} value={nivel.valor}>
+                      {nivel.etiqueta}
                     </option>
                   ))}
                 </select>
@@ -249,56 +268,51 @@ export default function AdminPage() {
         )}
       </div>
 
-      <div className="tabla-scroll">
-        <table className="tabla-permisos">
-          <thead>
-            <tr>
-              <th>Integrante</th>
-              <th>Admin global</th>
-              {MODULOS.map((m) => (
-                <th key={m}>{m}</th>
-              ))}
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {integrantes.map((integrante) => (
-              <tr key={integrante.id}>
-                <td>{integrante.nombre}</td>
-                <td>
-                  <input
-                    type="checkbox"
-                    checked={integrante.es_admin_global}
-                    onChange={(e) => cambiarAdminGlobal(integrante.id, e.target.checked)}
-                  />
-                </td>
+      <div className="lista-integrantes">
+        {integrantes.map((integrante) => (
+          <div key={integrante.id} className="card integrante-card">
+            <div className="integrante-header">
+              <strong>{integrante.nombre}</strong>
+              {integrante.id === perfil.id && <span className="badge">Vos</span>}
+              <button
+                className="btn-link rojo integrante-eliminar"
+                onClick={() => eliminarIntegrante(integrante.id, integrante.nombre)}
+                disabled={integrante.id === perfil.id}
+              >
+                <Trash2 size={14} /> Eliminar
+              </button>
+            </div>
+
+            <label className="integrante-admin-toggle">
+              <input
+                type="checkbox"
+                checked={integrante.es_admin_global}
+                onChange={(e) => cambiarAdminGlobal(integrante.id, e.target.checked)}
+              />
+              Admin global (control total sobre todo)
+            </label>
+
+            {!integrante.es_admin_global && (
+              <div className="integrante-permisos-grid">
                 {MODULOS.map((modulo) => (
-                  <td key={modulo}>
+                  <label key={modulo.clave} className="integrante-permiso">
+                    {modulo.etiqueta}
                     <select
-                      value={nivelDe(integrante.id, modulo)}
-                      onChange={(e) => cambiarNivel(integrante.id, modulo, e.target.value)}
-                      disabled={integrante.es_admin_global}
+                      value={nivelDe(integrante.id, modulo.clave)}
+                      onChange={(e) => cambiarNivel(integrante.id, modulo.clave, e.target.value)}
                     >
                       {NIVELES.map((nivel) => (
-                        <option key={nivel} value={nivel}>
-                          {nivel}
+                        <option key={nivel.valor} value={nivel.valor}>
+                          {nivel.etiqueta}
                         </option>
                       ))}
                     </select>
-                  </td>
+                  </label>
                 ))}
-                <td>
-                  <button
-                    className="btn-link rojo"
-                    onClick={() => eliminarIntegrante(integrante.id, integrante.nombre)}
-                  >
-                    <Trash2 size={14} /> Eliminar
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
     </Layout>
