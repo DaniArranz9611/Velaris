@@ -9,6 +9,7 @@ import EventosPage from './pages/EventosPage'
 import ContabilidadPage from './pages/ContabilidadPage'
 import EncuestasPage from './pages/EncuestasPage'
 import MiPerfilPage from './pages/MiPerfilPage'
+import MiembrosPage from './pages/MiembrosPage'
 import AdminPage from './pages/AdminPage'
 
 export default function App() {
@@ -64,6 +65,22 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <MiPerfilPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/miembros"
+              element={
+                <ProtectedRoute>
+                  <MiembrosPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/miembros/:id"
+              element={
+                <ProtectedRoute>
+                  <MiembrosPage />
                 </ProtectedRoute>
               }
             />

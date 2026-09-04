@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutGrid, BookOpen, CalendarDays, Wallet2, BarChart3, ShieldCheck, LogOut, UserCircle2 } from 'lucide-react'
+import { LayoutGrid, BookOpen, CalendarDays, Wallet2, BarChart3, Users, ShieldCheck, LogOut, UserCircle2 } from 'lucide-react'
 import { usePerfil } from '../lib/PerfilContext'
 import { supabase } from '../lib/supabaseClient'
 import EditarNombre from './EditarNombre'
@@ -9,7 +9,8 @@ const LINKS = [
   { to: '/libros', label: 'Libros', Icono: BookOpen },
   { to: '/eventos', label: 'Eventos', Icono: CalendarDays },
   { to: '/contabilidad', label: 'Contabilidad', Icono: Wallet2 },
-  { to: '/encuestas', label: 'Encuestas', Icono: BarChart3 }
+  { to: '/encuestas', label: 'Encuestas', Icono: BarChart3 },
+  { to: '/miembros', label: 'Miembros', Icono: Users }
 ]
 
 export default function Layout({ children }) {
@@ -33,12 +34,14 @@ export default function Layout({ children }) {
         </div>
         {perfil && (
           <div className="usuario-actual">
-            <Link to="/perfil" className="link-mi-perfil">
+            <Link to="/perfil" className="link-mi-perfil" title="Mi espacio personal">
               <UserCircle2 size={15} />
+              <span>Mi perfil (personal)</span>
             </Link>
             <EditarNombre />
           </div>
         )}
+        <span className="etiqueta-seccion-nav">Club de lectura</span>
         <nav className="app-nav">
           {LINKS.map((link) => (
             <Link

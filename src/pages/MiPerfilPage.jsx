@@ -104,16 +104,17 @@ export default function MiPerfilPage() {
           <>
             <div className="card">
               <h2 className="mes-titulo">
-                <TrendingUp size={16} /> Mi progreso en libros activos
+                <TrendingUp size={16} /> Mis lecturas activas (podés tener varias a la vez)
               </h2>
-              {avances.filter((a) => a.porcentaje < 100).length === 0 ? (
-                <p className="vacio">No estás con ningún libro en curso.</p>
+              {avances.filter((a) => a.estado_personal !== 'leido').length === 0 ? (
+                <p className="vacio">No estás con ningún libro en curso. Marcalo desde "Libros".</p>
               ) : (
                 <div className="mini-avances">
                   {avances
-                    .filter((a) => a.porcentaje < 100)
+                    .filter((a) => a.estado_personal !== 'leido')
                     .map((a) => (
                       <Link key={a.id} to={`/libros?abrir=${a.libros?.id}`} className="mini-avance-chip">
+                        {!a.es_publico && '🔒 '}
                         {a.libros?.titulo}: {a.porcentaje}%
                       </Link>
                     ))}
