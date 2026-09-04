@@ -384,6 +384,16 @@ button:disabled {
   color: var(--noche);
 }
 
+.badge-dorado {
+  background: var(--dorado);
+  color: var(--noche);
+  border-color: var(--dorado);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 600;
+}
+
 .rsvp {
   display: flex;
   gap: 0.5rem;

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { BookOpen, PlusCircle } from 'lucide-react'
+import { BookOpen, PlusCircle, Trash2, Star } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { usePerfil } from '../lib/PerfilContext'
 import Layout from '../components/Layout'
@@ -68,6 +68,35 @@ export default function LibrosPage() {
     cargarLibros()
   }
 
+  async function marcarLecturaDelMes(libroId) {
+    setError('')
+    await supabase.from('libros').update({ es_lectura_del_mes: false }).neq('id', libroId)
+    const { error } = await supabase
+      .from('libros')
+      .update({ es_lectura_del_mes: true, estado: 'leyendo' })
+      .eq('id', libroId)
+    if (error) {
+      setError(error.message)
+      return
+    }
+    cargarLibros()
+  }
+
+  async function eliminarLibro(libroId, titulo) {
+    if (!confirm(`¿Eliminar "${titulo}"? Se van a borrar también sus reseñas, teorías y avances.`)) return
+    setError('')
+    const { data, error } = await supabase.from('libros').delete().eq('id', libroId).select()
+    if (error) {
+      setError(error.message)
+      return
+    }
+    if (!data || data.length === 0) {
+      setError('No se pudo eliminar (falta permiso). Ejecutá sql/05_lectura_del_mes.sql en Supabase.')
+      return
+    }
+    cargarLibros()
+  }
+
   const ORDEN_ESTADO = { leyendo: 0, por_leer: 1, leido: 2 }
   const librosOrdenados = [...libros].sort((a, b) => ORDEN_ESTADO[a.estado] - ORDEN_ESTADO[b.estado])
 
@@ -115,6 +144,11 @@ export default function LibrosPage() {
                   <div>
                     <strong>{libro.titulo}</strong>
                     {libro.autor && <span className="libro-autor"> — {libro.autor}</span>}
+                    {libro.es_lectura_del_mes && (
+                      <span className="badge badge-dorado">
+                        <Star size={11} /> Lectura oficial del club
+                      </span>
+                    )}
                   </div>
                   {puedeEditar ? (
                     <select
@@ -137,6 +171,16 @@ export default function LibrosPage() {
                   >
                     {libroAbierto === libro.id ? 'Ocultar' : 'Ver más'}
                   </button>
+                  {puedeEditar && !libro.es_lectura_del_mes && (
+                    <button className="btn-link" onClick={() => marcarLecturaDelMes(libro.id)}>
+                      <Star size={14} /> Marcar como lectura del club
+                    </button>
+                  )}
+                  {puedeEditar && (
+                    <button className="btn-link rojo" onClick={() => eliminarLibro(libro.id, libro.titulo)}>
+                      <Trash2 size={14} /> Eliminar
+                    </button>
+                  )}
                 </div>
                 {libroAbierto === libro.id && (
                   <div className="libro-detalles">

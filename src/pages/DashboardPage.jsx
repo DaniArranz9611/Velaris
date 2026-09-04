@@ -29,7 +29,7 @@ export default function DashboardPage() {
       const { data: libros } = await supabase
         .from('libros')
         .select('*')
-        .eq('estado', 'leyendo')
+        .eq('es_lectura_del_mes', true)
         .order('created_at', { ascending: false })
         .limit(1)
 
