@@ -14,6 +14,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    storage: window.localStorage
+    storage: window.localStorage,
+    // PKCE es más confiable que el flujo por defecto en Safari/iPhone,
+    // sobre todo cuando el enlace mágico se abre en un contexto distinto (Mail -> Safari -> app instalada).
+    flowType: 'pkce'
   }
 })
