@@ -465,6 +465,21 @@ button:disabled {
   font-size: 0.82rem;
 }
 
+.evento-invitacion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: flex-start;
+  text-decoration: none;
+}
+
+.evento-invitacion-img {
+  max-width: 100%;
+  max-height: 320px;
+  border-radius: var(--radio-chico);
+  object-fit: cover;
+}
+
 /* ---------- Tabla de permisos ---------- */
 .tabla-scroll {
   width: 100%;

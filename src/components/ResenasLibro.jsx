@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { usePerfil } from '../lib/PerfilContext'
+import { comprimirImagen } from '../lib/imageUtils'
 import { StarRatingInput, StarRatingDisplay } from './StarRating'
 
 export default function ResenasLibro({ libroId }) {
@@ -49,8 +50,9 @@ export default function ResenasLibro({ libroId }) {
     let foto_url = miResena?.foto_url ?? null
 
     if (foto) {
-      const nombreArchivo = `${perfil.id}/${libroId}-${Date.now()}.${foto.name.split('.').pop()}`
-      const { error: errorSubida } = await supabase.storage.from('resenas').upload(nombreArchivo, foto)
+      const comprimida = await comprimirImagen(foto)
+      const nombreArchivo = `${perfil.id}/${libroId}-${Date.now()}.jpg`
+      const { error: errorSubida } = await supabase.storage.from('resenas').upload(nombreArchivo, comprimida)
 
       if (errorSubida) {
         setError(errorSubida.message)

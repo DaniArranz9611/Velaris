@@ -5,6 +5,7 @@ import { usePerfil } from '../lib/PerfilContext'
 import Layout from '../components/Layout'
 import ListasCompras from '../components/ListasCompras'
 import CuotasMensuales from '../components/CuotasMensuales'
+import { comprimirImagen } from '../lib/imageUtils'
 
 function mesActualISO() {
   const hoy = new Date()
@@ -66,8 +67,9 @@ export default function ContabilidadPage() {
     let ticket_url = null
 
     if (ticket) {
-      const nombreArchivo = `${perfil.id}/${Date.now()}.${ticket.name.split('.').pop()}`
-      const { error: errorSubida } = await supabase.storage.from('tickets').upload(nombreArchivo, ticket)
+      const comprimido = await comprimirImagen(ticket)
+      const nombreArchivo = `${perfil.id}/${Date.now()}.jpg`
+      const { error: errorSubida } = await supabase.storage.from('tickets').upload(nombreArchivo, comprimido)
 
       if (errorSubida) {
         setError(errorSubida.message)

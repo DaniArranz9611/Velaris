@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { CalendarDays, MapPin, PlusCircle, Check, X, Trash2 } from 'lucide-react'
+import { CalendarDays, MapPin, PlusCircle, Check, X, Trash2, ImageDown } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { usePerfil } from '../lib/PerfilContext'
+import { comprimirImagen } from '../lib/imageUtils'
 import Layout from '../components/Layout'
 
 export default function EventosPage() {
@@ -14,6 +15,8 @@ export default function EventosPage() {
   const [fecha, setFecha] = useState('')
   const [lugar, setLugar] = useState('')
   const [descripcion, setDescripcion] = useState('')
+  const [invitacion, setInvitacion] = useState(null)
+  const [subiendo, setSubiendo] = useState(false)
   const [error, setError] = useState('')
   const [misRespuestas, setMisRespuestas] = useState({})
 
@@ -56,14 +59,37 @@ export default function EventosPage() {
   async function agregarEvento(event) {
     event.preventDefault()
     setError('')
+    setSubiendo(true)
+
+    let invitacion_url = null
+
+    if (invitacion) {
+      const comprimida = await comprimirImagen(invitacion)
+      const nombreArchivo = `${perfil.id}/${Date.now()}.jpg`
+      const { error: errorSubida } = await supabase.storage
+        .from('invitaciones')
+        .upload(nombreArchivo, comprimida)
+
+      if (errorSubida) {
+        setError(errorSubida.message)
+        setSubiendo(false)
+        return
+      }
+
+      const { data: publicUrlData } = supabase.storage.from('invitaciones').getPublicUrl(nombreArchivo)
+      invitacion_url = publicUrlData.publicUrl
+    }
 
     const { error } = await supabase.from('eventos').insert({
       titulo,
       fecha,
       lugar,
       descripcion,
+      invitacion_url,
       creado_por: perfil?.id
     })
+
+    setSubiendo(false)
 
     if (error) {
       setError(error.message)
@@ -74,6 +100,7 @@ export default function EventosPage() {
     setFecha('')
     setLugar('')
     setDescripcion('')
+    setInvitacion(null)
     cargarEventos()
   }
 
@@ -123,7 +150,13 @@ export default function EventosPage() {
             onChange={(e) => setDescripcion(e.target.value)}
             rows={3}
           />
-          <button type="submit"><PlusCircle size={16} /> Agregar evento</button>
+          <label>
+            Imagen de la invitación (opcional, se descarga para todas):
+            <input type="file" accept="image/*" onChange={(e) => setInvitacion(e.target.files[0])} />
+          </label>
+          <button type="submit" disabled={subiendo}>
+            <PlusCircle size={16} /> {subiendo ? 'Guardando...' : 'Agregar evento'}
+          </button>
         </form>
       )}
 
@@ -171,6 +204,20 @@ export default function EventosPage() {
                   </a>
                 )}
                 {evento.descripcion && <p className="evento-descripcion">{evento.descripcion}</p>}
+                {evento.invitacion_url && (
+                  <a
+                    href={evento.invitacion_url}
+                    download
+                    target="_blank"
+                    rel="noreferrer"
+                    className="evento-invitacion"
+                  >
+                    <img src={evento.invitacion_url} alt="Invitación" className="evento-invitacion-img" />
+                    <span className="btn-link">
+                      <ImageDown size={14} /> Descargar invitación
+                    </span>
+                  </a>
+                )}
                 <div className="rsvp">
                   <button
                     className={misRespuestas[evento.id] === true ? 'activo' : ''}
