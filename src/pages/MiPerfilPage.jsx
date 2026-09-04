@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabaseClient'
 import { usePerfil } from '../lib/PerfilContext'
 import Layout from '../components/Layout'
 import EditarNombre from '../components/EditarNombre'
+import JournalPersonal from '../components/JournalPersonal'
 
 export default function MiPerfilPage() {
   const { perfil } = usePerfil()
@@ -124,10 +125,10 @@ export default function MiPerfilPage() {
 
             <div className="card">
               <h2 className="mes-titulo">
-                <BookMarked size={16} /> Mi book journal
+                <BookMarked size={16} /> Libros del club que leí
               </h2>
               {librosLeidos.length === 0 ? (
-                <p className="vacio">Todavía no escribiste ninguna reseña. ¡Empezá en la sección Libros!</p>
+                <p className="vacio">Todavía no escribiste ninguna reseña de un libro del club.</p>
               ) : (
                 <ul className="lista">
                   {librosLeidos.map((r) => (
@@ -146,6 +147,8 @@ export default function MiPerfilPage() {
                 </ul>
               )}
             </div>
+
+            <JournalPersonal />
           </>
         )}
       </div>
