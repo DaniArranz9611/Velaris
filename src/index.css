@@ -212,6 +212,19 @@ button {
   padding-bottom: 0.6rem;
   font-size: 0.85rem;
   color: var(--dorado-claro);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.link-mi-perfil {
+  color: var(--dorado-claro);
+  display: inline-flex;
+  opacity: 0.85;
+}
+
+.link-mi-perfil:hover {
+  opacity: 1;
 }
 
 .editar-nombre {
@@ -934,6 +947,68 @@ textarea {
 .item-comprado label {
   text-decoration: line-through;
   opacity: 0.65;
+}
+
+/* ---------- Perfil personal ---------- */
+.estrellas {
+  color: var(--dorado);
+  letter-spacing: 2px;
+  font-size: 1.1rem;
+  margin: 0.3rem 0;
+}
+
+/* ---------- Encuestas ---------- */
+.encuesta-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.opciones-encuesta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.opcion-encuesta {
+  position: relative;
+  background: var(--fondo);
+  color: var(--texto);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+  padding: 0.7rem 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  overflow: hidden;
+  font-weight: 500;
+  text-align: left;
+}
+
+.opcion-fondo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(212, 175, 106, 0.25);
+  transition: width 0.4s ease;
+  z-index: 0;
+}
+
+.opcion-texto,
+.opcion-porcentaje {
+  position: relative;
+  z-index: 1;
+}
+
+.opcion-porcentaje {
+  font-size: 0.8rem;
+  color: #6b6459;
+}
+
+.opcion-votada {
+  border-color: var(--dorado);
+  box-shadow: 0 0 0 2px rgba(212, 175, 106, 0.35);
 }
 
 /* ---------- Admin: invitaciones ---------- */

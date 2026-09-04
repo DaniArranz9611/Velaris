@@ -48,6 +48,17 @@ export default function AdminPage() {
 
   useEffect(() => {
     cargar()
+
+    const canal = supabase
+      .channel('admin-panel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'perfiles' }, () => cargar())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'permisos_modulo' }, () => cargar())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'invitaciones' }, () => cargar())
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(canal)
+    }
   }, [])
 
   function nivelDe(integranteId, modulo) {

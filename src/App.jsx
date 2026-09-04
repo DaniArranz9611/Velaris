@@ -7,6 +7,8 @@ import DashboardPage from './pages/DashboardPage'
 import LibrosPage from './pages/LibrosPage'
 import EventosPage from './pages/EventosPage'
 import ContabilidadPage from './pages/ContabilidadPage'
+import EncuestasPage from './pages/EncuestasPage'
+import MiPerfilPage from './pages/MiPerfilPage'
 import AdminPage from './pages/AdminPage'
 
 export default function App() {
@@ -46,6 +48,22 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <ContabilidadPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/encuestas"
+              element={
+                <ProtectedRoute>
+                  <EncuestasPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/perfil"
+              element={
+                <ProtectedRoute>
+                  <MiPerfilPage />
                 </ProtectedRoute>
               }
             />
