@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Wallet2, PlusCircle, Receipt } from 'lucide-react'
+import { Wallet2, PlusCircle, Receipt, Pencil, Trash2, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { usePerfil } from '../lib/PerfilContext'
 import Layout from '../components/Layout'
@@ -37,7 +37,16 @@ export default function ContabilidadPage() {
   const [eventoId, setEventoId] = useState('')
   const [ticket, setTicket] = useState(null)
 
+  const [editandoId, setEditandoId] = useState(null)
+  const [editTipo, setEditTipo] = useState('ingreso')
+  const [editDescripcion, setEditDescripcion] = useState('')
+  const [editCategoria, setEditCategoria] = useState('')
+  const [editMonto, setEditMonto] = useState('')
+  const [editFecha, setEditFecha] = useState('')
+  const [editEventoId, setEditEventoId] = useState('')
+
   const puedeEditar = puede('contabilidad', 'editar')
+  const puedeEliminar = puede('contabilidad', 'administrar')
 
   async function cargar() {
     setLoading(true)
@@ -104,6 +113,50 @@ export default function ContabilidadPage() {
     setMonto('')
     setEventoId('')
     setTicket(null)
+    cargar()
+  }
+
+  function empezarEdicion(m) {
+    setEditandoId(m.id)
+    setEditTipo(m.tipo)
+    setEditDescripcion(m.descripcion)
+    setEditCategoria(m.categoria ?? '')
+    setEditMonto(String(m.monto))
+    setEditFecha(m.fecha)
+    setEditEventoId(m.evento_id ?? '')
+  }
+
+  function cancelarEdicion() {
+    setEditandoId(null)
+  }
+
+  async function guardarEdicion(event) {
+    event.preventDefault()
+    setError('')
+    const { error } = await supabase
+      .from('movimientos')
+      .update({
+        tipo: editTipo,
+        descripcion: editDescripcion,
+        categoria: editCategoria,
+        monto: Number(editMonto),
+        fecha: editFecha,
+        evento_id: editEventoId || null
+      })
+      .eq('id', editandoId)
+
+    if (error) {
+      setError(error.message)
+      return
+    }
+    setEditandoId(null)
+    cargar()
+  }
+
+  async function eliminarMovimiento(id) {
+    if (!confirm('¿Eliminar este movimiento?')) return
+    const { error } = await supabase.from('movimientos').delete().eq('id', id)
+    if (error) setError(error.message)
     cargar()
   }
 
@@ -245,20 +298,77 @@ export default function ContabilidadPage() {
                 <ul className="lista">
                   {lista.map((m) => (
                     <li key={m.id} className="movimiento-item">
-                      <span className={m.tipo === 'ingreso' ? 'verde' : 'rojo'}>
-                        {m.tipo === 'ingreso' ? '+' : '−'}${Number(m.monto).toFixed(2)}
-                      </span>
-                      <span> — {m.descripcion}</span>
-                      {m.categoria && <span className="badge">{m.categoria}</span>}
-                      {m.eventos && <span className="badge">{m.eventos.titulo}</span>}
-                      {m.ticket_url && (
-                        <a href={m.ticket_url} target="_blank" rel="noreferrer" className="btn-link">
-                          Ver ticket
-                        </a>
+                      {editandoId === m.id ? (
+                        <form onSubmit={guardarEdicion} className="form-inline form-editar-movimiento">
+                          <select value={editTipo} onChange={(e) => setEditTipo(e.target.value)}>
+                            <option value="ingreso">Ingreso</option>
+                            <option value="egreso">Egreso</option>
+                          </select>
+                          <input
+                            type="text"
+                            value={editDescripcion}
+                            onChange={(e) => setEditDescripcion(e.target.value)}
+                            required
+                          />
+                          <input
+                            type="text"
+                            placeholder="Categoría"
+                            value={editCategoria}
+                            onChange={(e) => setEditCategoria(e.target.value)}
+                          />
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0.01"
+                            value={editMonto}
+                            onChange={(e) => setEditMonto(e.target.value)}
+                            required
+                          />
+                          <input
+                            type="date"
+                            value={editFecha}
+                            onChange={(e) => setEditFecha(e.target.value)}
+                            required
+                          />
+                          <select value={editEventoId} onChange={(e) => setEditEventoId(e.target.value)}>
+                            <option value="">Sin evento asociado</option>
+                            {eventos.map((ev) => (
+                              <option key={ev.id} value={ev.id}>
+                                {ev.titulo}
+                              </option>
+                            ))}
+                          </select>
+                          <button type="submit">Guardar</button>
+                          <button type="button" onClick={cancelarEdicion}><X size={14} /></button>
+                        </form>
+                      ) : (
+                        <>
+                          <span className={m.tipo === 'ingreso' ? 'verde' : 'rojo'}>
+                            {m.tipo === 'ingreso' ? '+' : '−'}${Number(m.monto).toFixed(2)}
+                          </span>
+                          <span> — {m.descripcion}</span>
+                          {m.categoria && <span className="badge">{m.categoria}</span>}
+                          {m.eventos && <span className="badge">{m.eventos.titulo}</span>}
+                          {m.ticket_url && (
+                            <a href={m.ticket_url} target="_blank" rel="noreferrer" className="btn-link">
+                              Ver ticket
+                            </a>
+                          )}
+                          <span className="fecha-movimiento">
+                            {new Date(m.fecha + 'T00:00:00').toLocaleDateString('es-AR')}
+                          </span>
+                          {puedeEditar && (
+                            <button type="button" className="btn-icono" onClick={() => empezarEdicion(m)}>
+                              <Pencil size={14} />
+                            </button>
+                          )}
+                          {puedeEliminar && (
+                            <button type="button" className="btn-icono" onClick={() => eliminarMovimiento(m.id)}>
+                              <Trash2 size={14} />
+                            </button>
+                          )}
+                        </>
                       )}
-                      <span className="fecha-movimiento">
-                        {new Date(m.fecha + 'T00:00:00').toLocaleDateString('es-AR')}
-                      </span>
                     </li>
                   ))}
                 </ul>

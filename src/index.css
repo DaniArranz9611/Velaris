@@ -1208,6 +1208,102 @@ button.resumen-clickable:hover {
   border-bottom: none;
 }
 
+.cuota-item-col {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.cuota-item-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.cuota-esperado,
+.cuota-esperado-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--texto-secundario, #888);
+}
+
+.cuota-esperado-edit input {
+  width: 5.5rem;
+}
+
+.cuota-acumulado {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.badge-estado {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+
+.badge-verde {
+  background: rgba(46, 160, 67, 0.15);
+  color: #2ea043;
+}
+
+.badge-rojo {
+  background: rgba(220, 53, 69, 0.15);
+  color: #dc3545;
+}
+
+.btn-icono {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem;
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+  opacity: 0.75;
+}
+
+.btn-icono:hover {
+  opacity: 1;
+}
+
+.pagos-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0.3rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pago-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  padding-left: 0.5rem;
+}
+
+.pago-acciones {
+  display: inline-flex;
+  gap: 0.2rem;
+  margin-left: auto;
+}
+
+.form-pago-inline {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.4rem;
+}
+
+.form-editar-movimiento {
+  width: 100%;
+}
+
 /* ---------- Admin: invitaciones ---------- */
 .invitar-modulo {
   display: flex;
