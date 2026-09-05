@@ -121,12 +121,13 @@ export default function MiPerfilPage() {
               <h2 className="mes-titulo">
                 <TrendingUp size={16} /> Mis lecturas activas (podés tener varias a la vez)
               </h2>
-              {avances.filter((a) => a.estado_personal !== 'leido').length === 0 ? (
+              {avances.filter((a) => a.estado_personal !== 'leido' && a.estado_personal !== 'abandonada')
+                .length === 0 ? (
                 <p className="vacio">No estás con ningún libro en curso. Marcalo desde "Libros".</p>
               ) : (
                 <div className="mini-avances">
                   {avances
-                    .filter((a) => a.estado_personal !== 'leido')
+                    .filter((a) => a.estado_personal !== 'leido' && a.estado_personal !== 'abandonada')
                     .map((a) => (
                       <Link key={a.id} to={`/libros?abrir=${a.libros?.id}`} className="mini-avance-chip">
                         {!a.es_publico && '🔒 '}

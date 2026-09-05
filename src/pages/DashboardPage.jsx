@@ -77,9 +77,11 @@ export default function DashboardPage() {
     cargar()
   }, [])
 
+  const activos = avances.filter((a) => a.estado_personal !== 'abandonada')
+  const abandonaron = avances.filter((a) => a.estado_personal === 'abandonada')
   const promedioAvance =
-    avances.length > 0
-      ? Math.round(avances.reduce((acc, a) => acc + a.porcentaje, 0) / avances.length)
+    activos.length > 0
+      ? Math.round(activos.reduce((acc, a) => acc + a.porcentaje, 0) / activos.length)
       : 0
 
   return (
@@ -113,11 +115,20 @@ export default function DashboardPage() {
                     <div className="barra-llenado" style={{ width: `${promedioAvance}%` }} />
                   </div>
                   <span className="avance-promedio">{promedioAvance}% de avance promedio del club</span>
-                  {avances.length > 0 && (
+                  {activos.length > 0 && (
                     <div className="mini-avances">
-                      {avances.map((a) => (
+                      {activos.map((a) => (
                         <span key={a.id} className="mini-avance-chip">
                           {a.perfiles?.nombre ?? 'Alguien'}: {a.porcentaje}%
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {abandonaron.length > 0 && (
+                    <div className="mini-avances">
+                      {abandonaron.map((a) => (
+                        <span key={a.id} className="mini-avance-chip mini-avance-abandonado">
+                          {a.perfiles?.nombre ?? 'Alguien'}: abandonó
                         </span>
                       ))}
                     </div>

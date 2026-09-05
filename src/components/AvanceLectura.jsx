@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Lock, Globe } from 'lucide-react'
+import { Lock, Globe, FlagOff } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { usePerfil } from '../lib/PerfilContext'
 
 const ESTADOS = [
   { valor: 'por_leer', etiqueta: 'Por leer' },
   { valor: 'leyendo', etiqueta: 'Leyendo' },
-  { valor: 'leido', etiqueta: 'Leído' }
+  { valor: 'leido', etiqueta: 'Leído' },
+  { valor: 'abandonada', etiqueta: 'Lectura abandonada' }
 ]
 
 export default function AvanceLectura({ libroId }) {
@@ -77,17 +78,23 @@ export default function AvanceLectura({ libroId }) {
           </select>
         </label>
 
-        <label>
-          Mi progreso:
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={miPorcentaje}
-            onChange={(e) => guardar({ porcentaje: Number(e.target.value) })}
-          />
-          <span>{miPorcentaje}%</span>
-        </label>
+        {miEstado === 'abandonada' ? (
+          <p className="vacio">
+            <FlagOff size={14} /> Marcaste esta lectura como abandonada. No se te va a pedir más el progreso.
+          </p>
+        ) : (
+          <label>
+            Mi progreso:
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={miPorcentaje}
+              onChange={(e) => guardar({ porcentaje: Number(e.target.value) })}
+            />
+            <span>{miPorcentaje}%</span>
+          </label>
+        )}
 
         <button
           type="button"
@@ -101,15 +108,24 @@ export default function AvanceLectura({ libroId }) {
 
       {otros.length > 0 && (
         <div className="avance-barras">
-          {otros.map((a) => (
-            <div key={a.id} className="avance-barra">
-              <span>{a.perfiles?.nombre ?? 'Sin nombre'}</span>
-              <div className="barra-fondo">
-                <div className="barra-llenado" style={{ width: `${a.porcentaje}%` }} />
+          {otros.map((a) =>
+            a.estado_personal === 'abandonada' ? (
+              <div key={a.id} className="avance-barra">
+                <span>{a.perfiles?.nombre ?? 'Sin nombre'}</span>
+                <span className="vacio">
+                  <FlagOff size={13} /> Abandonó esta lectura
+                </span>
               </div>
-              <span>{a.porcentaje}%</span>
-            </div>
-          ))}
+            ) : (
+              <div key={a.id} className="avance-barra">
+                <span>{a.perfiles?.nombre ?? 'Sin nombre'}</span>
+                <div className="barra-fondo">
+                  <div className="barra-llenado" style={{ width: `${a.porcentaje}%` }} />
+                </div>
+                <span>{a.porcentaje}%</span>
+              </div>
+            )
+          )}
         </div>
       )}
     </div>

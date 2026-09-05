@@ -705,6 +705,11 @@ button.resumen-clickable:hover {
   font-size: 0.78rem;
 }
 
+.mini-avance-abandonado {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
 .accesos-rapidos {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
