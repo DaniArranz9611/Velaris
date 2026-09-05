@@ -1,8 +1,13 @@
 import { useEffect, useState } from 'react'
-import { PlusCircle, Trash2, Pencil, Check, X } from 'lucide-react'
+import { PlusCircle, Trash2, Pencil, Check, X, Lock, Globe2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { usePerfil } from '../lib/PerfilContext'
+import { comprimirImagen } from '../lib/imageUtils'
 import { StarRatingInput, StarRatingDisplay } from './StarRating'
+
+function hoyISO() {
+  return new Date().toISOString().slice(0, 10)
+}
 
 export default function JournalPersonal() {
   const { perfil } = usePerfil()
@@ -12,6 +17,10 @@ export default function JournalPersonal() {
   const [autor, setAutor] = useState('')
   const [calificacion, setCalificacion] = useState(5)
   const [comentario, setComentario] = useState('')
+  const [fecha, setFecha] = useState(hoyISO())
+  const [esPublico, setEsPublico] = useState(false)
+  const [foto, setFoto] = useState(null)
+  const [subiendo, setSubiendo] = useState(false)
   const [error, setError] = useState('')
 
   async function cargar() {
@@ -19,7 +28,7 @@ export default function JournalPersonal() {
       .from('libro_journal_personal')
       .select('*')
       .eq('integrante_id', perfil.id)
-      .order('created_at', { ascending: false })
+      .order('fecha_publicacion', { ascending: false })
 
     if (error) setError(error.message)
     else setLibros(data)
@@ -35,13 +44,31 @@ export default function JournalPersonal() {
   async function agregar(e) {
     e.preventDefault()
     setError('')
+    setSubiendo(true)
+
+    let foto_url = null
+    if (foto) {
+      const comprimida = await comprimirImagen(foto)
+      const nombreArchivo = `${perfil.id}/journal-${Date.now()}.jpg`
+      const { error: errorSubida } = await supabase.storage.from('resenas').upload(nombreArchivo, comprimida)
+      if (!errorSubida) {
+        const { data: publicUrlData } = supabase.storage.from('resenas').getPublicUrl(nombreArchivo)
+        foto_url = publicUrlData.publicUrl
+      }
+    }
+
     const { error } = await supabase.from('libro_journal_personal').insert({
       integrante_id: perfil.id,
       titulo,
       autor,
       calificacion,
-      comentario
+      comentario,
+      fecha_publicacion: fecha,
+      es_publico: esPublico,
+      foto_url
     })
+
+    setSubiendo(false)
 
     if (error) {
       setError(error.message)
@@ -52,6 +79,9 @@ export default function JournalPersonal() {
     setAutor('')
     setCalificacion(5)
     setComentario('')
+    setFecha(hoyISO())
+    setEsPublico(false)
+    setFoto(null)
     cargar()
   }
 
@@ -73,6 +103,7 @@ export default function JournalPersonal() {
       <h2 className="mes-titulo">Mi book journal personal (fuera del club)</h2>
       <p className="vacio">
         Libros que leíste por tu cuenta, sin que formen parte del catálogo compartido del club.
+        Podés dejarlos privados o hacerlos públicos para que el resto del club los vea.
       </p>
 
       <form onSubmit={agregar} className="form-inline">
@@ -99,8 +130,20 @@ export default function JournalPersonal() {
           onChange={(e) => setComentario(e.target.value)}
           rows={2}
         />
-        <button type="submit">
-          <PlusCircle size={16} /> Agregar a mi journal
+        <label>
+          Fecha:
+          <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
+        </label>
+        <label className="check-publico">
+          <input type="checkbox" checked={esPublico} onChange={(e) => setEsPublico(e.target.checked)} />
+          {esPublico ? <Globe2 size={14} /> : <Lock size={14} />} {esPublico ? 'Pública (el club la puede ver)' : 'Privada (solo vos la ves)'}
+        </label>
+        <label>
+          Agregar foto (opcional):
+          <input type="file" accept="image/*" onChange={(e) => setFoto(e.target.files[0])} />
+        </label>
+        <button type="submit" disabled={subiendo}>
+          <PlusCircle size={16} /> {subiendo ? 'Guardando...' : 'Agregar a mi journal'}
         </button>
       </form>
 
@@ -125,9 +168,10 @@ function EntradaJournal({ l, onBorrar, onEditar }) {
   const [autor, setAutor] = useState(l.autor ?? '')
   const [calificacion, setCalificacion] = useState(Number(l.calificacion) || 5)
   const [comentario, setComentario] = useState(l.comentario ?? '')
+  const [esPublico, setEsPublico] = useState(l.es_publico ?? false)
 
   function guardar() {
-    onEditar(l.id, { titulo, autor, calificacion, comentario })
+    onEditar(l.id, { titulo, autor, calificacion, comentario, es_publico: esPublico })
     setEditando(false)
   }
 
@@ -138,6 +182,10 @@ function EntradaJournal({ l, onBorrar, onEditar }) {
         <input type="text" value={autor} onChange={(e) => setAutor(e.target.value)} placeholder="Autor" />
         <StarRatingInput valor={calificacion} onChange={setCalificacion} />
         <textarea value={comentario} onChange={(e) => setComentario(e.target.value)} rows={2} />
+        <label className="check-publico">
+          <input type="checkbox" checked={esPublico} onChange={(e) => setEsPublico(e.target.checked)} />
+          {esPublico ? <Globe2 size={14} /> : <Lock size={14} />} {esPublico ? 'Pública' : 'Privada'}
+        </label>
         <div className="teoria-acciones-editar">
           <button onClick={guardar}>
             <Check size={14} /> Guardar
@@ -155,6 +203,8 @@ function EntradaJournal({ l, onBorrar, onEditar }) {
       <div className="lista-header">
         <strong>{l.titulo}</strong>
         {l.autor && <span className="libro-autor"> — {l.autor}</span>}
+        <span className="fecha-movimiento">{new Date(l.fecha_publicacion + 'T00:00:00').toLocaleDateString('es-AR')}</span>
+        {l.es_publico ? <span className="badge"><Globe2 size={11} /> Pública</span> : <span className="badge"><Lock size={11} /> Privada</span>}
         <button className="btn-link" onClick={() => setEditando(true)}>
           <Pencil size={13} />
         </button>
@@ -164,6 +214,7 @@ function EntradaJournal({ l, onBorrar, onEditar }) {
       </div>
       {l.calificacion && <StarRatingDisplay valor={Number(l.calificacion)} />}
       {l.comentario && <p>{l.comentario}</p>}
+      {l.foto_url && <img src={l.foto_url} alt="" className="resena-foto" />}
     </li>
   )
 }
