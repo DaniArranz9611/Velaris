@@ -608,6 +608,16 @@ textarea {
   cursor: pointer;
 }
 
+button.resumen-clickable {
+  background: var(--card);
+  color: inherit;
+  font-weight: inherit;
+}
+
+button.resumen-clickable:hover {
+  background: var(--card);
+}
+
 .resumen-clickable:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 22px rgba(13, 27, 62, 0.14);
