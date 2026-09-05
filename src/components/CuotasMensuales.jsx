@@ -153,19 +153,34 @@ export default function CuotasMensuales() {
 
   if (loading) return <p>Cargando cuotas...</p>
 
-  const totalEsperado = integrantes.reduce((acc, i) => acc + montoEsperadoDe(i.id), 0)
   const totalAcumulado = integrantes.reduce((acc, i) => acc + acumuladoDe(i.id), 0)
 
-  const completos = integrantes.filter((i) => montoEsperadoDe(i.id) > 0 && acumuladoDe(i.id) >= montoEsperadoDe(i.id))
-  const faltan = integrantes.filter((i) => montoEsperadoDe(i.id) === 0 || acumuladoDe(i.id) < montoEsperadoDe(i.id))
+  // Estado de cada integrante: solo 3 posibles, sin ambigüedad.
+  // - 'completo': si hay meta y ya la alcanzó (o pagó algo y no hay meta cargada)
+  // - 'parcial': hay meta pero todavía no la alcanza, aunque ya pagó algo
+  // - 'pendiente': no pagó nada este mes
+  function estadoDe(integranteId) {
+    const esperado = montoEsperadoDe(integranteId)
+    const acumulado = acumuladoDe(integranteId)
+    if (acumulado <= 0) return 'pendiente'
+    if (esperado > 0 && acumulado < esperado) return 'parcial'
+    return 'completo'
+  }
+
+  const completos = integrantes.filter((i) => estadoDe(i.id) === 'completo')
+  const parciales = integrantes.filter((i) => estadoDe(i.id) === 'parcial')
+  const pendientes = integrantes.filter((i) => estadoDe(i.id) === 'pendiente')
 
   return (
     <div className="card cuotas-card">
       <h2 className="mes-titulo">Cuota del mes — pagos acumulados</h2>
       <div className="cuotas-resumen">
-        <span className="verde">Al día ({completos.length}): {completos.map((i) => i.nombre).join(', ') || '—'}</span>
-        <span className="rojo">Faltan ({faltan.length}): {faltan.map((i) => i.nombre).join(', ') || '—'}</span>
-        <span>Total recaudado por cuotas este mes: <strong>${totalAcumulado.toFixed(2)}</strong> de ${totalEsperado.toFixed(2)} esperado</span>
+        <span className="verde">Pagaron ({completos.length}): {completos.map((i) => i.nombre).join(', ') || '—'}</span>
+        {parciales.length > 0 && (
+          <span className="ambar">Pago parcial ({parciales.length}): {parciales.map((i) => i.nombre).join(', ')}</span>
+        )}
+        <span className="rojo">Faltan ({pendientes.length}): {pendientes.map((i) => i.nombre).join(', ') || '—'}</span>
+        <span>Total recaudado este mes: <strong>${totalAcumulado.toFixed(2)}</strong></span>
       </div>
 
       {error && <p className="error">{error}</p>}
@@ -174,54 +189,56 @@ export default function CuotasMensuales() {
         {integrantes.map((i) => {
           const esperado = montoEsperadoDe(i.id)
           const acumulado = acumuladoDe(i.id)
-          const diferencia = esperado - acumulado
-          const alDia = esperado > 0 && acumulado >= esperado
+          const estado = estadoDe(i.id)
           const misPagos = pagosDe(i.id)
 
           return (
             <li key={i.id} className="cuota-item cuota-item-col">
               <div className="cuota-item-header">
-                <span>{i.nombre}</span>
-                {editandoEsperadoId === i.id ? (
-                  <span className="cuota-esperado-edit">
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      autoFocus
-                      value={esperadoTemp}
-                      onChange={(e) => setEsperadoTemp(e.target.value)}
-                    />
-                    <button type="button" onClick={() => guardarEsperado(i.id)}><Check size={14} /></button>
-                    <button type="button" onClick={() => setEditandoEsperadoId(null)}><X size={14} /></button>
-                  </span>
-                ) : (
-                  <span className="cuota-esperado">
-                    Esperado: ${esperado.toFixed(2)}
-                    {puedeEditar && (
-                      <button
-                        type="button"
-                        className="btn-icono"
-                        onClick={() => {
-                          setEditandoEsperadoId(i.id)
-                          setEsperadoTemp(String(esperado))
-                        }}
-                      >
-                        <Pencil size={12} />
-                      </button>
-                    )}
-                  </span>
-                )}
-                <span className={alDia ? 'badge-estado badge-verde' : 'badge-estado badge-rojo'}>
-                  {alDia ? 'Al día' : diferencia > 0 ? `Falta $${diferencia.toFixed(2)}` : 'Sin pagos'}
+                <span className="cuota-nombre">{i.nombre}</span>
+                <span className={`badge-estado badge-${estado === 'completo' ? 'verde' : estado === 'parcial' ? 'ambar' : 'rojo'}`}>
+                  {estado === 'completo' && 'Pagó'}
+                  {estado === 'parcial' && `Falta $${(esperado - acumulado).toFixed(2)}`}
+                  {estado === 'pendiente' && 'Pendiente'}
                 </span>
-                <span className="cuota-acumulado">Pagó: ${acumulado.toFixed(2)}</span>
+                <span className="cuota-acumulado">${acumulado.toFixed(2)}</span>
                 {puedeEditar && (
                   <button type="button" className="btn-link" onClick={() => abrirFormPago(i.id)}>
-                    <PlusCircle size={14} /> Agregar pago
+                    <PlusCircle size={14} /> Pago
                   </button>
                 )}
               </div>
+
+              {puedeEditar && (
+                <div className="cuota-meta-fila">
+                  {editandoEsperadoId === i.id ? (
+                    <span className="cuota-esperado-edit">
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        autoFocus
+                        placeholder="Meta del mes"
+                        value={esperadoTemp}
+                        onChange={(e) => setEsperadoTemp(e.target.value)}
+                      />
+                      <button type="button" className="btn-icono" onClick={() => guardarEsperado(i.id)}><Check size={14} /></button>
+                      <button type="button" className="btn-icono" onClick={() => setEditandoEsperadoId(null)}><X size={14} /></button>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      className="cuota-meta-link"
+                      onClick={() => {
+                        setEditandoEsperadoId(i.id)
+                        setEsperadoTemp(esperado > 0 ? String(esperado) : '')
+                      }}
+                    >
+                      <Pencil size={11} /> {esperado > 0 ? `Meta: $${esperado.toFixed(2)}` : 'Definir meta (opcional)'}
+                    </button>
+                  )}
+                </div>
+              )}
 
               {misPagos.length > 0 && (
                 <ul className="pagos-lista">

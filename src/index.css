@@ -1220,17 +1220,41 @@ button.resumen-clickable:hover {
   flex-wrap: wrap;
 }
 
-.cuota-esperado,
+.cuota-nombre {
+  font-weight: 600;
+  min-width: 6rem;
+}
+
+.cuota-meta-fila {
+  margin-top: 0.15rem;
+}
+
+.cuota-meta-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  color: var(--texto-secundario, #888);
+  opacity: 0.8;
+}
+
+.cuota-meta-link:hover {
+  opacity: 1;
+}
+
 .cuota-esperado-edit {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
   font-size: 0.85rem;
-  color: var(--texto-secundario, #888);
 }
 
 .cuota-esperado-edit input {
-  width: 5.5rem;
+  width: 6rem;
 }
 
 .cuota-acumulado {
@@ -1238,10 +1262,15 @@ button.resumen-clickable:hover {
   font-weight: 600;
 }
 
+.ambar {
+  color: #d68a00;
+}
+
 .badge-estado {
   font-size: 0.75rem;
   padding: 0.15rem 0.5rem;
   border-radius: 999px;
+  white-space: nowrap;
 }
 
 .badge-verde {
@@ -1252,6 +1281,11 @@ button.resumen-clickable:hover {
 .badge-rojo {
   background: rgba(220, 53, 69, 0.15);
   color: #dc3545;
+}
+
+.badge-ambar {
+  background: rgba(214, 138, 0, 0.15);
+  color: #d68a00;
 }
 
 .btn-icono {
