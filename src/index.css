@@ -1063,6 +1063,56 @@ button.resumen-clickable:hover {
   margin-bottom: 0.6rem;
 }
 
+/* ---------- Lista de deseados ---------- */
+.deseados-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip-persona {
+  background: var(--fondo);
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: inherit;
+}
+
+.chip-persona.activo {
+  background: var(--noche, #2b2350);
+  color: white;
+  border-color: transparent;
+}
+
+.deseados-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.deseado-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.deseado-portada {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.deseado-portada-vacia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--fondo);
+  opacity: 0.6;
+}
+
 /* ---------- Listas de compras ---------- */
 .listas-compras {
   margin-top: 1.5rem;

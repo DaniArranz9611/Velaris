@@ -10,6 +10,7 @@ import ContabilidadPage from './pages/ContabilidadPage'
 import EncuestasPage from './pages/EncuestasPage'
 import MiPerfilPage from './pages/MiPerfilPage'
 import MiembrosPage from './pages/MiembrosPage'
+import DeseadosPage from './pages/DeseadosPage'
 import AdminPage from './pages/AdminPage'
 
 export default function App() {
@@ -81,6 +82,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <MiembrosPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/deseados"
+              element={
+                <ProtectedRoute>
+                  <DeseadosPage />
                 </ProtectedRoute>
               }
             />

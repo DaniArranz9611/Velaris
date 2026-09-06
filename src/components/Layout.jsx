@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutGrid, BookOpen, CalendarDays, Wallet2, BarChart3, Users, ShieldCheck, LogOut, UserCircle2 } from 'lucide-react'
+import { LayoutGrid, BookOpen, CalendarDays, Wallet2, BarChart3, Users, ShieldCheck, LogOut, UserCircle2, Gift } from 'lucide-react'
 import { usePerfil } from '../lib/PerfilContext'
 import { supabase } from '../lib/supabaseClient'
 import EditarNombre from './EditarNombre'
@@ -10,6 +10,7 @@ const LINKS = [
   { to: '/eventos', label: 'Eventos', Icono: CalendarDays, modulo: 'eventos' },
   { to: '/contabilidad', label: 'Contabilidad', Icono: Wallet2, modulo: 'contabilidad' },
   { to: '/encuestas', label: 'Encuestas', Icono: BarChart3, modulo: 'encuestas' },
+  { to: '/deseados', label: 'Deseados', Icono: Gift, modulo: null },
   { to: '/miembros', label: 'Miembros', Icono: Users, modulo: null }
 ]
 
